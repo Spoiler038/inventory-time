@@ -1,7 +1,7 @@
 {
   "name": "Инвентаризация Время",
-  "short_name": "Время",
-  "description": "Учёт продуктов в ресторане Время",
+  "short_name": "Кухня",
+  "description": "Учёт продуктов Время Есть",
   "start_url": "/inventory-time/",
   "scope": "/inventory-time/",
   "display": "standalone",
