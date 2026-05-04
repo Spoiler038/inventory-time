@@ -1,0 +1,25 @@
+{
+  "name": "Инвентаризация Время",
+  "short_name": "Время",
+  "description": "Учёт продуктов в ресторане Время",
+  "start_url": "/inventory-time/",
+  "scope": "/inventory-time/",
+  "display": "standalone",
+  "theme_color": "#1a252f",
+  "background_color": "#0f171e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
