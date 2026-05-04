@@ -326,59 +326,77 @@
     }
     
     /* ========== СПЛЕШ (ЭКРАН ЗАГРУЗКИ) ========== */
-    #splash {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #1a252f 0%, #0f171e 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 99999;
-      transition: opacity 0.5s ease-out;
-    }
-    .splash-content {
-      text-align: center;
-      animation: fadeInUp 0.6s ease-out;
-      padding: 20px;
-    }
-    .splash-logo {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 20px;
-      animation: pulse 1.5s ease-in-out infinite;
-      background: transparent;
-    }
-    .splash-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      background: transparent;
-    }
-    .splash-title {
-      color: white;
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-    .splash-subtitle {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 14px;
-      margin-bottom: 30px;
-    }
-    .splash-loader {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto;
-      border: 3px solid rgba(255, 255, 255, 0.2);
-      border-top: 3px solid #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+   /* ========== СПЛЕШ (ЭКРАН ЗАГРУЗКИ) ========== */
+#splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a252f 0%, #0f171e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  transition: opacity 0.5s ease-out;
+}
+
+.splash-content {
+  text-align: center;
+  animation: fadeInUp 0.6s ease-out;
+  padding: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  animation: pulse 1.5s ease-in-out infinite;
+  background: transparent;
+}
+
+.splash-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+}
+
+.splash-title {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.splash-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.splash-loader {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: block;
+  position: relative;
+  left: 0;
+  right: 0;
+}
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
