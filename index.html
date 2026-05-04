@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes, viewport-fit=cover">
+  <meta name="theme-color" content="#1a252f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Инвентаризация Время">
+  <link rel="manifest" href="/inventory-time/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="https://mealtime.group/logo_vremya.svg">
+  <link rel="apple-touch-icon" href="https://mealtime.group/logo_vremya.svg">
+  <title>Инвентаризация Время</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <style>
+    :root {
+      --primary-color: #e74c3c;
+      --secondary-color: #2c3e50;
+      --accent-color: #3498db;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--secondary-color) 0%, #1a252f 100%);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      background-color: #f5f7fa;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-header {
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+      height: 64px;
+      min-height: 64px;
+      max-height: 64px;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+    .app-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .back-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      width: 44px;
+      height: 44px;
+      margin-right: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, opacity 0.2s;
+      opacity: 0.9;
+    }
+    .back-btn:active {
+      transform: scale(0.85);
+      opacity: 0.7;
+    }
+    .back-btn i {
+      font-size: 32px;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+    .step { display: none; animation: fadeIn 0.3s ease; }
+    .step.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: none;
+      overflow: hidden;
+    }
+    .card-body { padding: 20px; }
+    
+    /* Цветные иконки цехов */
+    .department-card { cursor: pointer; background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; transition: all 0.2s; border: 2px solid transparent; }
+    .department-card:hover { transform: translateY(-2px); border-color: var(--accent-color); box-shadow: var(--shadow); }
+    .department-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+    .department-icon i { font-size: 26px; }
+    .department-info h5 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .department-info p { color: #777; font-size: 12px; margin: 0; }
+    
+    /* Цвета для всех цехов */
+    .dept-холодн .department-icon { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+    .dept-горяч .department-icon { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+    .dept-склад .department-icon { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+    .dept-ролл .department-icon { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+    .dept-пицца .department-icon { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); }
+    .dept-мангал .department-icon { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+    .dept-итого .department-icon { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); }
+    .dept-default .department-icon { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
+    
+    .products-list { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+    .product-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid #f0f0f0;
+    }
+    .product-card.chef-mode { border-left: 3px solid #f39c12; }
+    .product-card.readonly { opacity: 0.7; background-color: #f8f9fa; cursor: default; }
+    .product-card.readonly .edit-icon { display: none; }
+    .product-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .product-name { font-size: 15px; font-weight: 500; color: var(--secondary-color); }
+    .product-stock { font-size: 15px; font-weight: 600; color: var(--secondary-color); white-space: nowrap; }
+    .product-unit { font-size: 12px; font-weight: 400; color: #777; margin-left: 2px; }
+    .search-container {
+      padding: 10px 12px;
+      background-color: transparent;
+      flex-shrink: 0;
+      display: none;
+      justify-content: flex-start;
+    }
+    .search-container.visible { display: flex !important; }
+    .search-container.collapsed .search-input,
+    .search-container.collapsed .clear-search { display: none; }
+    .search-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 30px;
+      font-size: 14px;
+      margin-left: 10px;
+      display: none;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 12px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background-color: white;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 380px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 14px 18px;
+      border-radius: 20px 20px 0 0;
+    }
+    .modal-body { padding: 16px; }
+    .loader {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      background-color: var(--success-color);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      z-index: 10000;
+      text-align: center;
+      max-width: 400px;
+      margin: 0 auto;
+      animation: slideDown 0.3s ease-out;
+      font-size: 14px;
+    }
+    .notification.error { background-color: #e74c3c; }
+    .notification.info { background-color: #3498db; }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .btn {
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .btn-primary { background-color: var(--accent-color); color: white; }
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-danger { background-color: #e74c3c; color: white; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .edit-icon { color: var(--accent-color); font-size: 13px; cursor: pointer; margin-left: 6px; }
+    .quick-input { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    .quick-btn { padding: 10px; background-color: #f0f2f5; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .units-container { display: flex; gap: 4px; }
+    .unit-btn { padding: 10px 6px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; font-size: 12px; font-weight: 600; cursor: pointer; min-width: 45px; }
+    .unit-btn.active { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+    .modal-actions .btn {
+      flex: 1;
+      max-width: 140px;
+      text-align: center;
+      justify-content: center;
+      padding: 12px 16px;
+    }
+    .product-name-container { display: flex; align-items: center; gap: 6px; flex: 1; }
+    .readonly-notice { background: #f39c12; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-top: 15px; font-size: 13px; }
+    .current-stock { display: flex; justify-content: space-between; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 10px; font-size: 14px; }
+    .current-value { font-weight: 700; color: var(--secondary-color); font-size: 16px; }
+    .quantity-input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; font-weight: 600; text-align: center; background-color: #f8f9fa; }
+    .form-label { font-weight: 600; margin-bottom: 6px; display: block; font-size: 13px; color: var(--secondary-color); }
+    .input-row { display: flex; gap: 6px; align-items: center; }
+    .action-explanation { margin: 15px 0 12px; padding: 10px; background-color: #f0f7ff; border-radius: 10px; border-left: 3px solid var(--accent-color); font-size: 12px; line-height: 1.4; }
+    .action-explanation p { margin-bottom: 5px; }
+    .action-explanation p:last-child { margin-bottom: 0; }
+    .mt-3 { margin-top: 15px; }
+    .d-grid { display: grid; }
+    .inventory-toggle-btn { font-size: 14px; padding: 10px; }
+    @media (max-width: 480px) { 
+      .department-icon i { font-size: 22px; }
+      .unit-btn { padding: 8px 4px; min-width: 40px; font-size: 11px; }
+      .btn { padding: 10px; font-size: 13px; }
+      #step1.active { min-height: 75vh; }
+      .modal-actions { gap: 10px; }
+      .modal-actions .btn { min-width: 100px; padding: 10px 12px; }
+    }
+    
+    /* ========== СПЛЕШ (ЭКРАН ЗАГРУЗКИ) ========== */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a252f 0%, #0f171e 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      transition: opacity 0.5s ease-out;
+    }
+    .splash-content {
+      text-align: center;
+      animation: fadeInUp 0.6s ease-out;
+      padding: 20px;
+    }
+    .splash-logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      animation: pulse 1.5s ease-in-out infinite;
+      background: transparent;
+    }
+    .splash-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: transparent;
+    }
+    .splash-title {
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .splash-subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    .splash-loader {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @media (min-width: 768px) {
+      .splash-logo { width: 150px; height: 150px; }
+      .splash-title { font-size: 28px; }
+    }
+    
+    /* Обеспечиваем, что форма входа центрирована */
+    #step1.active {
+      display: flex;
+      align-items: center;
+      min-height: 80vh;
+    }
+    #step1.active .card {
+      width: 100%;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+<div id="splash">
+  <div class="splash-content">
+    <div class="splash-logo">
+      <img src="https://mealtime.group/logo_vremya.svg" alt="Логотип">
+    </div>
+    <div class="splash-title">Инвентаризация</div>
+    <div class="splash-subtitle">Учёт продуктов в ресторане</div>
+    <div class="splash-loader"></div>
+  </div>
+</div>
+
+<div class="app-container">
+  <header class="app-header">
+    <div class="header-content">
+      <div style="display: flex; align-items: center;">
+        <button class="back-btn" id="backButton" style="display: none;" onclick="window.goBack && goBack()">
+          <i class="bi bi-arrow-left-short"></i>
+        </button>
+        <div class="app-title"><i class="bi bi-clipboard-data"></i><span id="headerTitle">Инвентаризация</span></div>
+      </div>
+      <div class="header-actions" id="headerActions" style="display: none;">
+        <button class="logout-btn" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Выйти</span></button>
+      </div>
+    </div>
+  </header>
+  <main class="main-content" id="mainContent">
+    <div id="step1" class="step active">
+      <div class="card"><div class="card-body">
+        <div class="text-center mb-3">
+          <img src="https://mealtime.group/logo_vremya.svg" alt="Логотип" style="width: 80px; height: 80px; margin: 0 auto 10px auto; display: block;">
+          <h2>Вход в систему</h2>
+          <p class="text-muted small">Введите номер телефона</p>
+        </div>
+        <form id="authForm">
+          <div class="mb-3">
+            <input type="tel" class="form-control form-control-lg" id="phone" placeholder="8 (999) 123-45-67" required>
+          </div>
+          <div class="d-grid"><button type="submit" class="btn btn-primary btn-lg">Войти</button></div>
+        </form>
+      </div></div>
+    </div>
+    <div id="step2" class="step"><div class="card"><div class="card-body">
+      <div class="text-center mb-3"><h3>Выберите цех</h3><p id="userWelcome" class="text-muted small"></p></div>
+      <div id="departmentsList"></div>
+    </div></div></div>
+    <div id="step3" class="step"></div>
+  </main>
+  <div class="search-container collapsed" id="searchContainer">
+    <div class="search-wrapper">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="Поиск продукта...">
+      <button class="clear-search" id="clearSearchBtn" style="display:none;">✖</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="productModal"><div class="modal-content">
+  <div class="modal-header"><div class="modal-title" id="modalProductName"></div></div>
+  <div class="modal-body">
+    <div class="current-stock"><span>Текущий остаток:</span><span class="current-value" id="currentStockValue"></span></div>
+    <div class="quick-input">
+      <button class="quick-btn" data-value="0.1">+0.1</button><button class="quick-btn" data-value="0.5">+0.5</button>
+      <button class="quick-btn" data-value="1">+1</button><button class="quick-btn" data-value="5">+5</button>
+    </div>
+    <div><label class="form-label">Количество</label><div class="input-row">
+      <input type="number" step="0.001" class="quantity-input" id="quantityInput" placeholder="0">
+      <div class="units-container" id="unitsContainer"></div>
+    </div></div>
+    <div class="action-explanation">
+      <p><i class="bi bi-arrow-repeat me-1"></i> <strong>Заменить</strong> — полностью заменить остаток</p>
+      <p><i class="bi bi-plus-circle me-1"></i> <strong>Добавить</strong> — прибавить к текущему</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="replaceBtn"><i class="bi bi-arrow-repeat"></i> Заменить</button>
+      <button class="btn btn-success" id="addBtn"><i class="bi bi-plus-circle"></i> Добавить</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="modal-overlay" id="logoutModal"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title"><i class="bi bi-box-arrow-right me-2"></i>Подтверждение выхода</h5></div>
+  <div class="modal-body">
+    <div class="text-center mb-3"><i class="bi bi-question-circle" style="font-size: 2.5rem; color: #3498db;"></i></div>
+    <h5 class="mb-3 text-center">Вы уверены, что хотите выйти?</h5>
+    <div class="mt-3"><div class="form-check">
+      <input class="form-check-input" type="checkbox" id="allowOtherDevices">
+      <label class="form-check-label" for="allowOtherDevices">Разрешить вход на других устройствах</label>
+    </div></div>
+  </div>
+  <div class="modal-actions p-3">
+    <button class="btn btn-secondary" onclick="window.closeLogoutModal && closeLogoutModal()">Отмена</button>
+    <button class="btn btn-danger" onclick="window.performLogout && performLogout()">Выйти</button>
+  </div>
+</div></div>
+
+<script>
+// ==================== КОНФИГУРАЦИЯ ====================
+// ВАЖНО: Замените URL после публикации GAS скрипта!
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzMklgomb30rWFNb_O71CN4siElhrMKensAuW96o94g1r_35K4rlcIPYvWvBWX0NUqSXQ/exec';
+
+const TECHNICAL_SHEETS = ['Users', 'Devices', 'Logs', 'Лист1', 'Лист2'];
+const READONLY_SHEETS = ['Итого', 'Отчеты'];
+
+const units = [{ value: 'кг', name: 'килограммы' }, { value: 'шт', name: 'штуки' }, { value: 'короб', name: 'коробки' }];
+
+// Глобальные переменные
+let currentStep = 1, userData = null, currentDepartment = null, products = [], filteredProducts = [];
+let selectedProduct = null, deviceId = null, currentPhone = null, isChef = false, isInventoryActive = false;
+let isReadonlyDepartment = false;
+window.currentEditingProductId = null;
+window.isEditingName = false;
+
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ====================
+function getDeviceId() {
+  let storedId = localStorage.getItem('device_id');
+  if (!storedId) {
+    const navigatorInfo = navigator.userAgent + navigator.platform + navigator.language;
+    const timeStamp = new Date().getTime();
+    const random = Math.random().toString(36).substring(2, 15);
+    let hash = 0;
+    for (let i = 0; i < navigatorInfo.length; i++) {
+      const char = navigatorInfo.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    storedId = `device_${Math.abs(hash)}_${timeStamp}_${random.substring(0, 8)}`;
+    localStorage.setItem('device_id', storedId);
+  }
+  deviceId = storedId;
+  return storedId;
+}
+
+function showLoader() {
+  hideLoader();
+  const loader = document.createElement('div');
+  loader.className = 'loader';
+  loader.id = 'globalLoader';
+  document.body.appendChild(loader);
+}
+
+function hideLoader() {
+  const loader = document.getElementById('globalLoader');
+  if (loader) loader.remove();
+}
+
+function showNotification(message, type = 'success') {
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// ==================== API JSONP ====================
+function callGAS(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `jsonp_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+    
+    const url = new URL(GAS_URL);
+    url.searchParams.append('action', action);
+    url.searchParams.append('callback', callbackName);
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) {
+        url.searchParams.append(key, params[key].toString());
+      }
+    });
+    
+    console.log(`Calling GAS via JSONP: ${action}`, params);
+    
+    const timeout = setTimeout(() => {
+      if (window[callbackName]) {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error(`Timeout for ${action}`));
+      }
+    }, 30000);
+    
+    window[callbackName] = function(data) {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      console.log(`GAS response for ${action}:`, data);
+      resolve(data);
+    };
+    
+    const script = document.createElement('script');
+    script.src = url.toString();
+    script.onerror = function() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error(`JSONP request failed for ${action}`));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+// ==================== АВТОРИЗАЦИЯ ====================
+async function checkSession() {
+  const result = await callGAS('checkSession', { deviceId: getDeviceId() });
+  if (result.success && result.phone) {
+    currentPhone = result.phone;
+    document.getElementById('phone').value = result.phone;
+    document.getElementById('headerActions').style.display = 'block';
+    await autoAuthorize(result.phone);
+  } else {
+    document.getElementById('headerActions').style.display = 'none';
+  }
+}
+
+async function autoAuthorize(phone) {
+  showLoader();
+  const result = await callGAS('authorize', { phone, deviceId: getDeviceId() });
+  hideLoader();
+  if (!result.error) handleAuthSuccess(result);
+}
+
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const phoneInput = document.getElementById('phone').value;
+  const cleanPhone = phoneInput.replace(/\D/g, '');
+  if (cleanPhone.length < 10) {
+    showNotification('Введите корректный номер телефона', 'error');
+    return;
+  }
+  const normalizedPhone = cleanPhone.slice(-10);
+  localStorage.setItem('last_phone', normalizedPhone);
+  currentPhone = normalizedPhone;
+  
+  showLoader();
+  const result = await callGAS('authorize', { phone: cleanPhone, deviceId: getDeviceId() });
+  hideLoader();
+  
+  if (result.error) {
+    showNotification(result.error, 'error');
+    return;
+  }
+  handleAuthSuccess(result);
+}
+
+function handleAuthSuccess(result) {
+  userData = result;
+  isChef = result.isChef || false;
+  isInventoryActive = result.inventoryActive || false;
+  
+  callGAS('saveSession', { phone: currentPhone, deviceId: getDeviceId() });
+  
+  document.getElementById('headerActions').style.display = 'block';
+  document.getElementById('userWelcome').textContent = `Добро пожаловать, ${result.user.name || 'Пользователь'}!`;
+  
+  const filteredDepartments = result.departments.filter(dept => !TECHNICAL_SHEETS.includes(dept));
+  
+  if (filteredDepartments.length === 0) {
+    showNotification('Нет доступных цехов', 'error');
+    return;
+  }
+  
+  document.getElementById('headerTitle').textContent = 'Выбор цеха';
+  document.getElementById('backButton').style.display = 'none';
+  renderDepartments(filteredDepartments);
+  
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  if (step1) step1.classList.remove('active');
+  if (step2) step2.classList.add('active');
+  currentStep = 2;
+  
+  const phoneInput = document.getElementById('phone');
+  if (phoneInput) phoneInput.value = '';
+}
+
+function getDepartmentClass(dept) {
+  const d = dept.toLowerCase();
+  if (d.includes('холодн')) return 'dept-холодн';
+  if (d.includes('горяч')) return 'dept-горяч';
+  if (d.includes('склад')) return 'dept-склад';
+  if (d.includes('ролл') || d.includes('суши')) return 'dept-ролл';
+  if (d.includes('пицца')) return 'dept-пицца';
+  if (d.includes('мангал')) return 'dept-мангал';
+  if (d.includes('итог')) return 'dept-итого';
+  return 'dept-default';
+}
+
+function getDepartmentIcon(dept) {
+  const d = dept.toLowerCase();
+  if (d.includes('холодн')) return 'bi-snow2';
+  if (d.includes('горяч')) return 'bi-fire';
+  if (d.includes('склад')) return 'bi-box-seam';
+  if (d.includes('ролл')) return 'bi-egg-fried';
+  if (d.includes('пицца')) return 'bi-pizza';
+  if (d.includes('мангал')) return 'bi-fire';
+  if (d.includes('итог')) return 'bi-table';
+  return 'bi-building';
+}
+
+function renderDepartments(departments) {
+  const container = document.getElementById('departmentsList');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  departments.forEach(dept => {
+    const deptClass = getDepartmentClass(dept);
+    const icon = getDepartmentIcon(dept);
+    const isReadonly = READONLY_SHEETS.includes(dept);
+    
+    const card = document.createElement('div');
+    card.className = `department-card ${deptClass}`;
+    card.onclick = () => selectDepartment(dept);
+    card.innerHTML = `
+      <div class="department-icon"><i class="bi ${icon}"></i></div>
+      <div class="department-info">
+        <h5>${dept}</h5>
+        <p>${isReadonly ? 'Только просмотр' : 'Нажмите для входа'}</p>
+      </div>
+      <i class="bi bi-chevron-right ms-auto" style="color: #ccc; font-size: 18px;"></i>
+    `;
+    container.appendChild(card);
+  });
+  
+  if (isChef) {
+    const btnDiv = document.createElement('div');
+    btnDiv.className = 'mt-3 d-grid';
+    btnDiv.innerHTML = `
+      <button class="btn ${isInventoryActive ? 'btn-danger' : 'btn-success'} inventory-toggle-btn" id="inventoryToggleBtn">
+        <i class="bi ${isInventoryActive ? 'bi-stop-circle' : 'bi-play-circle'}"></i> 
+        ${isInventoryActive ? 'Закончить инвентаризацию' : 'Начать инвентаризацию'}
+      </button>
+      <small class="text-muted text-center mt-1 small">${isInventoryActive ? 'Инвентаризация активна' : 'Инвентаризация не активна'}</small>
+    `;
+    
+    const toggleBtn = btnDiv.querySelector('#inventoryToggleBtn');
+    if (toggleBtn) {
+      toggleBtn.onclick = () => toggleInventory();
+    }
+    
+    container.appendChild(btnDiv);
+  }
+}
+
+async function toggleInventory() {
+  showLoader();
+  const result = await callGAS('toggleInventory', { newStatus: !isInventoryActive });
+  hideLoader();
+  
+  if (result.success) {
+    isInventoryActive = result.inventoryActive;
+    showNotification(result.message, 'success');
+    
+    const toggleBtn = document.getElementById('inventoryToggleBtn');
+    if (toggleBtn) {
+      toggleBtn.className = `btn ${isInventoryActive ? 'btn-danger' : 'btn-success'} inventory-toggle-btn`;
+      toggleBtn.innerHTML = `
+        <i class="bi ${isInventoryActive ? 'bi-stop-circle' : 'bi-play-circle'}"></i> 
+        ${isInventoryActive ? 'Закончить инвентаризацию' : 'Начать инвентаризацию'}
+      `;
+      
+      const smallText = toggleBtn.parentElement?.querySelector('small');
+      if (smallText) {
+        smallText.textContent = isInventoryActive ? 'Инвентаризация активна' : 'Инвентаризация не активна';
+      }
+    }
+    
+    if (currentDepartment) {
+      renderProducts();
+    }
+  } else {
+    showNotification(result.error || 'Ошибка', 'error');
+  }
+}
+
+// ==================== ВЫБОР ЦЕХА ====================
+async function selectDepartment(department) {
+  currentDepartment = department;
+  isReadonlyDepartment = READONLY_SHEETS.includes(department);
+  
+  document.getElementById('headerTitle').textContent = department;
+  const showBack = userData && userData.hasMultipleDepts;
+  document.getElementById('backButton').style.display = showBack ? 'block' : 'none';
+  
+  showLoader();
+  const result = await callGAS('getProducts', { department });
+  hideLoader();
+  
+  if (result.error) {
+    showNotification(result.error, 'error');
+    return;
+  }
+  
+  products = result.products || [];
+  filteredProducts = [...products];
+  renderProducts();
+  goToStep(3);
+  
+  const sc = document.getElementById('searchContainer');
+  if (sc) { sc.classList.add('visible', 'collapsed'); }
+}
+
+function renderProducts() {
+  const container = document.getElementById('step3');
+  if (!container) return;
+  
+  document.querySelectorAll('.readonly-notice, .alert-success').forEach(n => n.remove());
+  
+  if (filteredProducts.length === 0) {
+    container.innerHTML = `<div class="empty-state text-center p-4"><i class="bi bi-box" style="font-size:40px;color:#ddd;"></i><h5>Нет продуктов</h5></div>`;
+    return;
+  }
+  
+  let html = '<div class="products-list">';
+  filteredProducts.forEach(product => {
+    const stockDisplay = product.stock > 0 ? product.stock : '0';
+    
+    const canEdit = !isReadonlyDepartment;
+    const editIcon = (isChef && canEdit) ? `<span class="edit-icon" onclick="event.stopPropagation(); startEditName(${product.id}, '${product.name.replace(/'/g, "\\'")}', event)"><i class="bi bi-pencil"></i></span>` : '';
+    const canOpenModal = (isChef && canEdit) || (isInventoryActive && canEdit);
+    const clickAttr = (!window.isEditingName && canOpenModal) ? `onclick="openProductModal(${product.id})"` : '';
+    const readonlyClass = isReadonlyDepartment ? 'readonly' : '';
+    
+    html += `
+      <div class="product-card ${isChef ? 'chef-mode' : ''} ${readonlyClass}" ${clickAttr} data-id="${product.id}" style="${!canOpenModal ? 'cursor: default;' : ''}">
+        <div class="product-row">
+          <div class="product-name-container">
+            <span class="product-name">${escapeHtml(product.name)}</span>
+            ${editIcon}
+          </div>
+          <div class="product-stock">${stockDisplay}<span class="product-unit">${product.unit}</span></div>
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  
+  if (isReadonlyDepartment) {
+    const notice = document.createElement('div');
+    notice.className = 'readonly-notice';
+    notice.innerHTML = '<i class="bi bi-eye"></i> Режим только для просмотра. Изменения запрещены.';
+    container.appendChild(notice);
+  } else if (!isChef && !isInventoryActive) {
+    const notice = document.createElement('div');
+    notice.className = 'readonly-notice';
+    notice.innerHTML = '<i class="bi bi-eye"></i> Режим просмотра. Инвентаризация не активна.';
+    container.appendChild(notice);
+  }
+  
+  if (isChef) {
+    document.querySelectorAll('.product-card').forEach(card => card.classList.add('chef-mode'));
+  }
+  window.currentEditingProductId = null;
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>]/g, function(m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m];
+  });
+}
+
+function initUnits() {
+  const container = document.getElementById('unitsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  units.forEach(unit => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'unit-btn';
+    btn.textContent = unit.value;
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+    container.appendChild(btn);
+  });
+}
+
+// ==================== ПОИСК ====================
+function filterProducts() {
+  const term = document.getElementById('searchInput').value.toLowerCase().trim();
+  filteredProducts = term ? products.filter(p => p.name.toLowerCase().includes(term)) : [...products];
+  renderProducts();
+}
+
+function toggleSearch() {
+  const container = document.getElementById('searchContainer');
+  const input = document.getElementById('searchInput');
+  if (container.classList.contains('collapsed')) {
+    container.classList.remove('collapsed');
+    if (input) { input.style.display = 'block'; setTimeout(() => input.focus(), 100); }
+  } else {
+    container.classList.add('collapsed');
+    if (input) { input.style.display = 'none'; input.value = ''; filterProducts(); }
+  }
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  filterProducts();
+}
+
+// ==================== РЕДАКТИРОВАНИЕ НАЗВАНИЯ ====================
+function startEditName(productId, currentName, event) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+  if (!isChef) { showNotification('Только шеф-повар может редактировать названия', 'error'); return; }
+  if (isReadonlyDepartment) { showNotification('Этот цех только для просмотра', 'error'); return; }
+  
+  closeAllEditors();
+  const product = filteredProducts.find(p => p.id === productId);
+  if (!product) return;
+  
+  const productCard = document.querySelector(`.product-card[data-id="${productId}"]`);
+  if (!productCard) return;
+  
+  window.currentEditingProductId = productId;
+  window.isEditingName = true;
+  
+  const nameContainer = productCard.querySelector('.product-name-container');
+  nameContainer.innerHTML = `
+    <div style="flex:1;">
+      <input type="text" class="edit-name-input" id="editNameInput_${productId}" value="${currentName.replace(/"/g, '&quot;')}" style="width:100%;padding:6px;border:2px solid #3498db;border-radius:6px;font-size:14px;">
+      <div class="edit-actions" style="margin-top:6px;display:flex;gap:6px;">
+        <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); saveNameEdit(${productId})"><i class="bi bi-check"></i> Сохранить</button>
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); cancelNameEdit(${productId})"><i class="bi bi-x"></i> Отмена</button>
+      </div>
+    </div>
+  `;
+  setTimeout(() => {
+    const inp = document.getElementById(`editNameInput_${productId}`);
+    if (inp) inp.focus();
+  }, 50);
+}
+
+async function saveNameEdit(productId) {
+  const newName = document.getElementById(`editNameInput_${productId}`).value.trim();
+  if (!newName) { showNotification('Название не может быть пустым', 'error'); return; }
+  
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  
+  showLoader();
+  const result = await callGAS('updateProductName', { departmentName: currentDepartment, rowNumber: product.row, newName });
+  hideLoader();
+  
+  if (result.success) {
+    product.name = newName;
+    filteredProducts = filteredProducts.map(p => p.id === productId ? { ...p, name: newName } : p);
+    renderProducts();
+    showNotification('Название обновлено', 'success');
+  } else {
+    showNotification(result.error || 'Ошибка', 'error');
+  }
+  window.isEditingName = false;
+  window.currentEditingProductId = null;
+}
+
+function cancelNameEdit() {
+  renderProducts();
+  window.isEditingName = false;
+  window.currentEditingProductId = null;
+}
+
+function closeAllEditors() {
+  if (window.currentEditingProductId) { renderProducts(); window.currentEditingProductId = null; }
+  window.isEditingName = false;
+}
+
+// ==================== МОДАЛЬНОЕ ОКНО ====================
+function openProductModal(productId) {
+  if (window.isEditingName) return;
+  if (isReadonlyDepartment) { showNotification('Этот цех только для просмотра', 'info'); return; }
+  if (!isChef && !isInventoryActive) { showNotification('Инвентаризация не активна', 'info'); return; }
+  
+  selectedProduct = filteredProducts.find(p => p.id === productId);
+  if (!selectedProduct) return;
+  
+  document.getElementById('modalProductName').textContent = selectedProduct.name;
+  document.getElementById('currentStockValue').textContent = `${selectedProduct.stock} ${selectedProduct.unit}`;
+  document.getElementById('quantityInput').value = '';
+  
+  let unitToSelect = selectedProduct.defaultUnit || selectedProduct.unit || 'кг';
+  document.querySelectorAll('.unit-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('data-value') === unitToSelect) btn.classList.add('active');
+  });
+  
+  document.getElementById('productModal').classList.add('active');
+  document.body.classList.add('modal-open');
+  setTimeout(() => document.getElementById('quantityInput').focus(), 100);
+}
+
+function closeProductModal() {
+  document.getElementById('productModal').classList.remove('active');
+  document.body.classList.remove('modal-open');
+  selectedProduct = null;
+}
+
+async function updateProduct(isReplace) {
+  const newQuantity = parseFloat(document.getElementById('quantityInput').value);
+  const selectedUnitBtn = document.querySelector('.unit-btn.active');
+  const newUnit = selectedUnitBtn ? selectedUnitBtn.getAttribute('data-value') : selectedProduct.unit;
+  
+  if (isNaN(newQuantity) || newQuantity < 0) { showNotification('Введите корректное количество', 'error'); return; }
+  if (!selectedUnitBtn) { showNotification('Выберите единицу измерения', 'error'); return; }
+  
+  showLoader();
+  const result = await callGAS('updateProductStock', {
+    departmentName: currentDepartment,
+    rowNumber: selectedProduct.row,
+    quantity: newQuantity,
+    unit: newUnit,
+    isReplace: isReplace
+  });
+  hideLoader();
+  
+  if (result.success) {
+    selectedProduct.stock = newQuantity;
+    selectedProduct.unit = newUnit;
+    renderProducts();
+    showNotification(`${selectedProduct.name}: ${isReplace ? 'заменен на' : 'добавлено'} ${newQuantity} ${newUnit}`, 'success');
+    closeProductModal();
+  } else {
+    showNotification(result.error || 'Ошибка', 'error');
+  }
+}
+
+// ==================== НАВИГАЦИЯ ====================
+function goToStep(step) {
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  
+  if (step1) step1.classList.remove('active');
+  if (step2) step2.classList.remove('active');
+  if (step3) step3.classList.remove('active');
+  
+  const activeStep = document.getElementById(`step${step}`);
+  if (activeStep) activeStep.classList.add('active');
+  
+  currentStep = step;
+  
+  const sc = document.getElementById('searchContainer');
+  if (step === 3) { 
+    if (sc) sc.classList.add('visible'); 
+    document.getElementById('mainContent').scrollTop = 0; 
+  } else { 
+    if (sc) sc.classList.remove('visible'); 
+  }
+}
+
+function goBack() {
+  if (currentStep === 3) {
+    document.getElementById('headerTitle').textContent = 'Выбор цеха';
+    document.getElementById('backButton').style.display = 'none';
+    if (userData) {
+      const filtered = userData.departments.filter(d => !TECHNICAL_SHEETS.includes(d));
+      renderDepartments(filtered);
+    }
+    goToStep(2);
+  }
+}
+
+// ==================== ЛОГАУТ ====================
+function showLogoutModal() {
+  document.getElementById('logoutModal').classList.add('active');
+  document.body.classList.add('modal-open');
+}
+
+function closeLogoutModal() {
+  document.getElementById('logoutModal').classList.remove('active');
+  document.body.classList.remove('modal-open');
+}
+
+async function performLogout() {
+  const allowOtherDevices = document.getElementById('allowOtherDevices').checked;
+  showLoader();
+  const result = await callGAS('logout', { deviceId: getDeviceId(), allowOtherDevices });
+  hideLoader();
+  
+  if (result.success) {
+    closeLogoutModal();
+    userData = null;
+    currentDepartment = null;
+    products = [];
+    filteredProducts = [];
+    currentPhone = null;
+    document.getElementById('authForm').reset();
+    document.getElementById('headerTitle').textContent = 'Инвентаризация';
+    const saved = localStorage.getItem('last_phone');
+    if (saved) document.getElementById('phone').value = saved;
+    document.getElementById('headerActions').style.display = 'none';
+    goToStep(1);
+    showNotification(result.message || 'Вы вышли', 'success');
+  } else {
+    showNotification(result.error || 'Ошибка', 'error');
+  }
+}
+
+// ==================== ЭКСПОРТ ФУНКЦИЙ ====================
+window.goBack = goBack;
+window.closeLogoutModal = closeLogoutModal;
+window.performLogout = performLogout;
+window.toggleInventory = toggleInventory;
+window.startEditName = startEditName;
+window.saveNameEdit = saveNameEdit;
+window.cancelNameEdit = cancelNameEdit;
+window.openProductModal = openProductModal;
+window.updateProduct = updateProduct;
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+function hideSplash() {
+  const splash = document.getElementById('splash');
+  if (splash) {
+    splash.style.opacity = '0';
+    setTimeout(() => { splash.style.display = 'none'; }, 500);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  getDeviceId();
+  initUnits();
+  checkSession();
+  
+  document.getElementById('authForm').addEventListener('submit', handleAuthSubmit);
+  document.getElementById('searchInput').addEventListener('input', filterProducts);
+  document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
+  document.querySelector('.search-icon')?.addEventListener('click', toggleSearch);
+  document.getElementById('logoutBtn').addEventListener('click', showLogoutModal);
+  
+  document.getElementById('productModal').addEventListener('click', function(e) {
+    if (e.target === this) closeProductModal();
+  });
+  document.getElementById('replaceBtn').addEventListener('click', () => { if (selectedProduct) updateProduct(true); });
+  document.getElementById('addBtn').addEventListener('click', () => { if (selectedProduct) updateProduct(false); });
+  
+  document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const input = document.getElementById('quantityInput');
+      input.value = (parseFloat(input.value) || 0) + parseFloat(this.getAttribute('data-value'));
+    });
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeProductModal(); closeLogoutModal(); }
+  });
+  
+  const savedPhone = localStorage.getItem('last_phone');
+  if (savedPhone) document.getElementById('phone').value = savedPhone;
+  
+  setTimeout(hideSplash, 800);
+});
+</script>
+</body>
+</html>
