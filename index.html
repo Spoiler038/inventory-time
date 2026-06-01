@@ -990,6 +990,7 @@ async function selectDepartment(department) {
   filteredProducts = [...products];
   renderProducts();
   goToStep(3);
+  history.pushState(null, '', location.href);
   const sc = document.getElementById('searchContainer');
   if (sc) sc.classList.add('visible', 'collapsed');
 }
@@ -1294,6 +1295,7 @@ function goBack() {
       renderDepartments(filtered);
     }
     goToStep(2);
+    history.replaceState(null, '', location.href);
   }
 }
 function showLogoutModal() { document.getElementById('logoutModal').classList.add('active'); document.body.classList.add('modal-open'); }
@@ -1339,6 +1341,22 @@ function scrollToTop() {
   const mainContent = document.getElementById('mainContent');
   if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
 }
+  // ==================== ОБРАБОТКА КНОПКИ/ЖЕСТА НАЗАД ====================
+function initBackButtonHandler() {
+  // Добавляем начальное состояние в историю
+  history.pushState(null, '', location.href);
+  
+  // Обработчик нажатия кнопки "Назад"
+  window.addEventListener('popstate', function(event) {
+    if (currentStep === 3) {
+      event.preventDefault();
+      goBack();
+      // Добавляем новое состояние, чтобы не уйти со страницы
+      history.pushState(null, '', location.href);
+    }
+  });
+}
+
 
 window.goBack = goBack;
 window.closeLogoutModal = closeLogoutModal;
@@ -1364,6 +1382,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initUnits();
   checkSession();
   initScrollTopButton();
+  initBackButtonHandler();
   document.getElementById('authForm').addEventListener('submit', handleAuthSubmit);
   document.getElementById('searchInput').addEventListener('input', filterProducts);
   document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
